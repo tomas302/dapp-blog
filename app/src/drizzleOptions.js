@@ -1,4 +1,4 @@
-// import Contract from "./contracts/Contract.json";
+import Blog from "./contracts/Blog.json";
 
 const options = {
   web3: {
@@ -8,9 +8,9 @@ const options = {
       url: "ws://127.0.0.1:9545",
     },
   },
-  contracts: [/* Contract */],
+  contracts: [ Blog ],
   events: {
-    SimpleStorage: ["StorageSet"],
+    Blog: ["postPublished"],
   },
   polls: {
     accounts: 1500,
