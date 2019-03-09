@@ -1,8 +1,11 @@
 import React, { Component } from "react";
 import { DrizzleProvider } from "drizzle-react";
 import { LoadingContainer } from "drizzle-react-components";
+import { BrowserRouter, Route } from 'react-router-dom';
 
 import "./App.css";
+
+import Blog from "./components/Blog";
 
 import drizzleOptions from "./drizzleOptions";
 
@@ -13,9 +16,9 @@ class App extends Component {
     return (
       <DrizzleProvider options={drizzleOptions}>
         <LoadingContainer>
-          <div>
-            Here goes the app
-          </div>
+          <BrowserRouter>
+            <Route path="/" component={Blog}/>
+          </BrowserRouter>
         </LoadingContainer>
       </DrizzleProvider>
     );
