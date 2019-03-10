@@ -12,9 +12,6 @@ const options = {
   events: {
     Blog: ["postPublished"],
   },
-  polls: {
-    accounts: 1500,
-  },
 };
 
 export default options;

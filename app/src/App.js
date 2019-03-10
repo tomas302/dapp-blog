@@ -5,7 +5,7 @@ import { BrowserRouter, Route } from 'react-router-dom';
 
 import "./App.css";
 
-import Blog from "./components/Blog";
+import Blog from "./containers/blog";
 
 import drizzleOptions from "./drizzleOptions";
 
