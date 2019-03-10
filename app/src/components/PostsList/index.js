@@ -21,12 +21,19 @@ class PostsList extends Component {
         this.getPastEvents();
     }
 
-    getPastEvents() {
+    getPastEvents = async () => {
         if (!this.props.drizzleStatus.initialized) {
             return;
         }
         const contract = this.contracts.Blog;
         const contractWeb3 = new this.web3.eth.Contract(contract.abi, contract.address);
+
+        let postsRemoved = [];
+        let res = await contractWeb3.getPastEvents('postRemoved', { fromBlock: 0 });
+        for (let i = res.length - 1; i >= 0; i--) {
+            let hash = res[i].returnValues;
+            postsRemoved.push(hash);
+        }
 
         contractWeb3.getPastEvents('postPublished', { fromBlock: 0 }).then(async (res) => {
             let posts = [];
@@ -35,6 +42,7 @@ class PostsList extends Component {
             // reversed order to show the newest first
             for (let i = res.length - 1; i >= 0; i--) {
                 let hash = res[i].returnValues._ipfsHash;
+                if (postsRemoved.some(el => (el._ipfsHash === hash && res[i].returnValues.blockNumber < el.blockNumber) )) continue;
                 posts.push(hash);
 
                 // we retrieve the content of the IPFS hash and access the content
@@ -73,6 +81,9 @@ class PostsList extends Component {
                 <a href={"https://ipfs.infura.io/ipfs/" + this.state.posts[i] } target="_blank" rel="noopener noreferrer">
                     See Original
                 </a>
+                <button onClick={() => this.props.handleRemovePost(this.state.posts[i]) }>
+                    Remove
+                </button>
             </li>);
         }
         if (this.state.postSelected !== -1) {

@@ -16,6 +16,7 @@ class Blog extends Component {
         this.contracts = context.drizzle.contracts;
 
         this.handleNewPost = this.handleNewPost.bind(this);
+        this.handleRemovePost = this.handleRemovePost.bind(this);
         this.handleNewPostBodyChange = this.handleNewPostBodyChange.bind(this);
     }
 
@@ -32,9 +33,23 @@ class Blog extends Component {
 
             const contract = this.contracts.Blog;
 
-            contract.methods.newPost(ipfsHash[0].hash).send();
+            contract.methods.newPost(ipfsHash[0].hash).send().then(res => {
+                // Update UI
+            });
         });
 
+    };
+
+    handleRemovePost = async (hash) => {
+        if (!this.props.drizzleStatus.initialized) {
+            return;
+        }
+
+        const contract = this.contracts.Blog;
+
+        contract.methods.removePost(hash).send().then(res => {
+            // Update UI
+        });
     };
     
     handleNewPostBodyChange(event) {
@@ -46,7 +61,10 @@ class Blog extends Component {
     render() {
         return (
             <div>
-                <PostsList ipfs={ipfs} />
+                <PostsList
+                    ipfs={ipfs}
+                    handleRemovePost={this.handleRemovePost}
+                />
                 <form onSubmit={this.handleNewPost}>
                     <label>
                         <h2>Post's Body:</h2>

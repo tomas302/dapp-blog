@@ -12,7 +12,10 @@ contract Blog {
     string[] posts;
 
     // Events
-    event postPublished(string _ipfsHash);
+    event ownerChanged(address newOwner);
+    event homeChanged(string _ipfsHash);
+    event postPublished(string _ipfsHash, uint blockNumber);
+    event postRemoved(string _ipfsHash, uint blockNumber);
 
     // Modifiers
 
@@ -37,25 +40,41 @@ contract Blog {
 
     function setOwner(address _newOwner) public onlyOwner {
         owner = _newOwner;
+        emit ownerChanged(_newOwner);
     }
 
     function setHomePage(string memory _ipfsHash) public onlyOwner {
         homeIpfsHash = _ipfsHash;
+        emit homeChanged(_ipfsHash);
     }
 
     function newPost(string memory _ipfsHash) public onlyOwner {
         posts.push(_ipfsHash);
-        emit postPublished(_ipfsHash);
+        emit postPublished(_ipfsHash, block.number);
     }
 
-    function removePost(uint index) public onlyOwner returns (string memory) {
-        require(index < posts.length && index > 0, "Index out of bounds");
+    function removePost(string memory _ipfsHash) public onlyOwner returns (string memory) {
+        // First we find the index of the post
+        uint index = 0;
+        bool found = false;
+        for (uint i = 0; i < posts.length; i++) {
+            // If the hash of the hashes it's the same, then we return the index
+            if (keccak256(abi.encodePacked(posts[i])) == keccak256(abi.encodePacked(_ipfsHash))) {
+                index = i;
+                found = true;
+                break;
+            }
+        }
+        require(found, "Post wasn't found.");
+
+        // Then we remove it and shift every post after it to the left
         string memory element = posts[index];
         for (uint i = index; i < posts.length - 1; i++) {
             posts[index] = posts[index + 1];
         }
         delete posts[posts.length - 1];
         posts.length--;
+        emit postRemoved(element, block.number);
         return element;
     }
 
