@@ -3,8 +3,7 @@ import PostsList from '../components/PostsList/';
 
 const mapStateToProps = state => {
   return {
-    drizzleStatus: state.drizzleStatus,
-    Blog: state.contracts.Blog
+    drizzleStatus: state.drizzleStatus
   }
 }
 

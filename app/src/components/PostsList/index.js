@@ -21,10 +21,22 @@ class PostsList extends Component {
         this.getPastEvents();
     }
 
+    shouldComponentUpdate(nextProps, nextState) {
+        if (nextProps.updatePastEvents) {
+            this.getPastEvents();
+            return true;
+        } else {
+            return true;
+        }
+    }
+
     getPastEvents = async () => {
         if (!this.props.drizzleStatus.initialized) {
             return;
         }
+
+        this.props.handlePastEventsUpdated();
+
         const contract = this.contracts.Blog;
         const contractWeb3 = new this.web3.eth.Contract(contract.abi, contract.address);
 

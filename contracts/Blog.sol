@@ -12,7 +12,6 @@ contract Blog {
     string[] posts;
 
     // Events
-    event ownerChanged(address newOwner);
     event homeChanged(string _ipfsHash);
     event postPublished(string _ipfsHash, uint blockNumber);
     event postRemoved(string _ipfsHash, uint blockNumber);
@@ -38,23 +37,12 @@ contract Blog {
         
     }
 
-    function setOwner(address _newOwner) public onlyOwner {
-        owner = _newOwner;
-        emit ownerChanged(_newOwner);
-    }
-
     function setHomePage(string memory _ipfsHash) public onlyOwner {
         homeIpfsHash = _ipfsHash;
         emit homeChanged(_ipfsHash);
     }
 
-    function newPost(string memory _ipfsHash) public onlyOwner {
-        posts.push(_ipfsHash);
-        emit postPublished(_ipfsHash, block.number);
-    }
-
-    function removePost(string memory _ipfsHash) public onlyOwner returns (string memory) {
-        // First we find the index of the post
+    function getPostIndex(string memory _ipfsHash) internal view returns (bool, uint) {
         uint index = 0;
         bool found = false;
         for (uint i = 0; i < posts.length; i++) {
@@ -65,17 +53,29 @@ contract Blog {
                 break;
             }
         }
-        require(found, "Post wasn't found.");
+        return (found, index);
+    }
+
+    function newPost(string memory _ipfsHash) public onlyOwner {
+        (bool found, ) = getPostIndex(_ipfsHash);
+        require(!found, "Post already exists, if you want to publish it again, remove it first");
+        posts.push(_ipfsHash);
+        emit postPublished(_ipfsHash, block.number);
+    }
+
+    function removePost(string memory _ipfsHash) public onlyOwner returns (string memory) {
+        (bool found, uint index) = getPostIndex(_ipfsHash);
+        require(found, "Post doesn't exist");
 
         // Then we remove it and shift every post after it to the left
-        string memory element = posts[index];
+        string memory postHashToRemove = posts[index];
         for (uint i = index; i < posts.length - 1; i++) {
             posts[index] = posts[index + 1];
         }
         delete posts[posts.length - 1];
         posts.length--;
-        emit postRemoved(element, block.number);
-        return element;
+        emit postRemoved(postHashToRemove, block.number);
+        return postHashToRemove;
     }
 
     function withdrawDonations() public onlyOwner {

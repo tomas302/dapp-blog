@@ -10,17 +10,25 @@ class Blog extends Component {
 
         this.state = {
             newPostBody: '',
-            newPostHash: ''
+            newPostHash: '',
+            updatePastEvents: false
         };
 
         this.contracts = context.drizzle.contracts;
 
+        this.handleNewPostBodyChange = this.handleNewPostBodyChange.bind(this);
         this.handleNewPost = this.handleNewPost.bind(this);
         this.handleRemovePost = this.handleRemovePost.bind(this);
-        this.handleNewPostBodyChange = this.handleNewPostBodyChange.bind(this);
+        this.handlePastEventsUpdated = this.handlePastEventsUpdated.bind(this);
     }
 
-    handleNewPost = async(event) => {
+    handleNewPostBodyChange(event) {
+        this.setState({
+            newPostBody: event.target.value
+        });
+    }
+
+    handleNewPost = async (event) => {
         event.preventDefault();
         if (!this.props.drizzleStatus.initialized) {
             return;
@@ -34,7 +42,9 @@ class Blog extends Component {
             const contract = this.contracts.Blog;
 
             contract.methods.newPost(ipfsHash[0].hash).send().then(res => {
-                // Update UI
+                this.setState({
+                    updatePastEvents: true
+                });
             });
         });
 
@@ -48,34 +58,42 @@ class Blog extends Component {
         const contract = this.contracts.Blog;
 
         contract.methods.removePost(hash).send().then(res => {
-            // Update UI
+            this.setState({
+                updatePastEvents: true
+            });
         });
     };
-    
-    handleNewPostBodyChange(event) {
+
+    handlePastEventsUpdated() {
         this.setState({
-            newPostBody: event.target.value
+            updatePastEvents: false
         });
     }
 
     render() {
         return (
-            <div>
-                <PostsList
+            <div className="container">
+                <div className="row">
+                    <PostsList
                     ipfs={ipfs}
-                    handleRemovePost={this.handleRemovePost}
-                />
-                <form onSubmit={this.handleNewPost}>
-                    <label>
-                        <h2>Post's Body:</h2>
-                        <textarea onChange={this.handleNewPostBodyChange} value={this.state.newPostBody} />
-                    </label>
-                    <label>
-                        <h2>Post's IPFS Hash:</h2>
-                        <input type="text" value={this.state.newPostHash} disabled />
-                    </label>
-                    <button type="submit">Publish</button>
-                </form>
+                        updatePastEvents={this.state.updatePastEvents}
+                        handlePastEventsUpdated={this.handlePastEventsUpdated}
+                        handleRemovePost={this.handleRemovePost}
+                    />
+                </div>
+                <div className="row">
+                    <form onSubmit={this.handleNewPost}>
+                        <div class="form-group">
+                            <label><h2>Post's Body:</h2></label>
+                            <textarea className="form-control" onChange={this.handleNewPostBodyChange} value={this.state.newPostBody} />
+                        </div>
+                        <div class="form-group">
+                            <label><h2>Post's IPFS Hash:</h2></label>
+                            <input className="form-control" type="text" value={this.state.newPostHash} disabled />
+                        </div>
+                        <button className="btn btn-primary" type="submit">Publish</button>
+                    </form>
+                </div>
             </div>
         )
     }
@@ -84,6 +102,6 @@ class Blog extends Component {
 Blog.contextTypes = {
     drizzle: PropTypes.object
 }
-  
+
 
 export default Blog;
